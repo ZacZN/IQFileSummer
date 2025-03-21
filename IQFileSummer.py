@@ -1,8 +1,9 @@
-from iqtools import *
-import argparse
+from iqtools import tools
 import numpy as np
+import toml
 
-LFRAMES = 1024
+with open("config.toml", "r") as f:
+    config = toml.load(f)
 
 def parse_dataset(dataset):
     data_arr = []
@@ -13,18 +14,20 @@ def parse_dataset(dataset):
 
     return data_arr
 
-def process_loop(dataset, path, output_name):
+
+def data_summer(dataset, path, output_name, output_location):
     zz = np.array([])
     for filename in dataset:
         fullpath = path + filename[0]
         print(f"Processing {filename}")
-        iq = get_iq_object(fullpath)
+        iq = tools.get_iq_object(fullpath)
         iq.read_samples(1)
-        lframes = LFRAMES
         nframes = int(iq.nsamples_total / lframes)
         iq.read_samples(nframes * lframes)
-        z = get_cplx_spectrogram(
-            iq.data_array, lframes=lframes, nframes=nframes
+        z = tools.get_cplx_spectrogram(
+            iq.data_array,
+            lframes=lframes,
+            nframes=nframes
         )
         if np.shape(zz)[0] == 0:
             zz.resize((nframes, lframes))
@@ -32,37 +35,28 @@ def process_loop(dataset, path, output_name):
         else:
             zz += np.abs(z)
 
-    print(f"Plotting to {output_name}.png")
     xx, yy, _ = iq.get_power_spectrogram(lframes=lframes, nframes=nframes)
-    plot_spectrogram(xx, yy, np.abs(np.fft.fftshift(zz, axes=1)), filename=output_name, cen=iq.center,
-                     dbm=False, title=output_name)
+
+    print(f"Saving data to file {output_name}.npz in location {output_location}")
+    np.savez(output_name + ".npz", xx, yy, np.abs(np.fft.fftshift(zz, axes=1)))
 
 def main():
 
-    # Parse text file containing the names of the data files, and the path to those files
-    parser = argparse.ArgumentParser()
+    t_start = config["settings"]["t_start"]
+    t_end = config["settings"]["t_end"]
+    lframes = config["settings"]["lframes"]
+    nframes = int(iq.nsamples_total / lframes)
+    experiment_name = config["settings"]["experiment_name"]
+    output_location = config["settings"]["output_location"]
 
-    parser.add_argument(
-        "--dataset", type=str, required=True, help=".txt file containing names of data files - 1 file per line"
-    )
+    output_name = f"{experiment_name}_{t_start}-{t_end}_{lframes}lframes-{nframes}nframes"
 
-    parser.add_argument(
-        "--path", type=str, required=True, help="Path to the data files"
-    )
+    file_list = config["settings"]["file_list"]
+    file_path = config["settings"]["file_path"]
 
-    parser.add_argument(
-        "--outputname", required=True, help="Name for output files"
-    )
+    dataset = parse_dataset(file_list)
 
-    args = parser.parse_args()
-    dataset = args.dataset
-    path = args.path
-    output_name = args.outputname
-
-    data_arr = parse_dataset(dataset)
-
-    process_loop(dataset=data_arr, path=path, output_name=output_name)
+    data_summer(dataset=dataset, path=file_path, output_name=output_name, output_location=output_location)
 
 if __name__ == "__main__":
     main()
-

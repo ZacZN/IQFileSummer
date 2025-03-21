@@ -1,0 +1,8 @@
+[settings]
+file_list = "path-to-file-list"
+file_path = "path-to-datafiles"
+output_location = "path-to-output-location"
+lframes = lframes
+t_start = "t_start"
+t_end = "t_end"
+experiment_name = "experiment_name"
