@@ -40,7 +40,7 @@ def data_summer(dataset, path, output_location):
     output_name = f"{experiment_name}_{t_start}-{t_end}_{lframes}lframes-{nframes}nframes"
 
     print(f"Saving data to file {output_name}.npz in location {output_location}")
-    np.savez(output_name + ".npz", xx, yy, np.abs(np.fft.fftshift(zz, axes=1)))
+    np.savez(output_location + output_name + ".npz", xx, yy, np.abs(np.fft.fftshift(zz, axes=1)))
 
 t_start = config["settings"]["t_start"]
 t_end = config["settings"]["t_end"]
