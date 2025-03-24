@@ -1,8 +1,6 @@
 # IQFileSummer
 Sums the data from several IQ datafiles and saves it in .npz format.
 
-Not guaranteed to work yet!
-
 ### Requirements
 Requires numpy and [IQTools](https://github.com/xaratustrah/iqtools). Check the installation instructions under the IQTools repo.
 
