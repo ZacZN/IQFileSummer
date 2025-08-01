@@ -17,6 +17,8 @@ def parse_dataset(dataset):
 
 def data_summer(dataset, path, output_location):
     
+    xx, yy, _ = iq.get_power_spectrogram(lframes=lframes, nframes=nframes)
+
     zz = np.array([])
     ref_pos = None
     for filename in dataset:
@@ -34,7 +36,10 @@ def data_summer(dataset, path, output_location):
 
         z_real = np.abs(z)
 
-        max_bin = np.argmax(z_real)
+        sly = slice(0, np.shape(yy)[0])
+
+        proj_spec = np.sum(z_real[sly,:], axis=0)
+        max_bin = np.argmax(proj_spec)
 
         if f_shift_tracking == "True":
             if ref_pos is None:
@@ -51,8 +56,6 @@ def data_summer(dataset, path, output_location):
             zz += z_real
         else:
             zz += z_real
-
-    xx, yy, _ = iq.get_power_spectrogram(lframes=lframes, nframes=nframes)
 
     output_name = f"{experiment_name}_{t_start}-{t_end}_{lframes}lframes-{nframes}nframes"
 
