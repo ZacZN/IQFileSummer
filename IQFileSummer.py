@@ -16,8 +16,6 @@ def parse_dataset(dataset):
 
 
 def data_summer(dataset, path, output_location):
-    
-    xx, yy, _ = iq.get_power_spectrogram(lframes=lframes, nframes=nframes)
 
     zz = np.array([])
     ref_pos = None
@@ -28,6 +26,7 @@ def data_summer(dataset, path, output_location):
         iq.read_samples(1)
         nframes = int(iq.nsamples_total / lframes)
         iq.read_samples(nframes * lframes)
+        xx, yy, _ = iq.get_power_spectrogram(lframes=lframes, nframes=nframes)
         z = tools.get_cplx_spectrogram(
             iq.data_array,
             lframes=lframes,
