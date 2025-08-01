@@ -16,7 +16,9 @@ def parse_dataset(dataset):
 
 
 def data_summer(dataset, path, output_location):
+    
     zz = np.array([])
+    ref_pos = None
     for filename in dataset:
         fullpath = path + filename[0]
         print(f"Processing {filename}")
@@ -29,11 +31,26 @@ def data_summer(dataset, path, output_location):
             lframes=lframes,
             nframes=nframes
         )
+
+        z_real = np.abs(z)
+
+        max_bin = np.argmax(z_real)
+
+        if f_shift_tracking == "True":
+            if ref_pos is None:
+                ref_pos = max_bin
+                shift = 0
+            else:
+                shift = max_bin - ref_pos
+
+            print(f"Ref. pos.: {ref_pos}, Cur. pos.: {max_bin}")
+            z_real = np.roll(z_real, shift=-shift, axis=1)
+
         if np.shape(zz)[0] == 0:
             zz.resize((nframes, lframes))
-            zz += np.abs(z)
+            zz += z_real
         else:
-            zz += np.abs(z)
+            zz += z_real
 
     xx, yy, _ = iq.get_power_spectrogram(lframes=lframes, nframes=nframes)
 
@@ -48,6 +65,7 @@ lframes = config["settings"]["lframes"]
 lframes = int(lframes)
 experiment_name = config["settings"]["experiment_name"]
 output_location = config["settings"]["output_location"]
+f_shift_tracking = config["settings"]["f_shift_tracking"]
 
 file_list = config["settings"]["file_list"]
 file_path = config["settings"]["file_path"]
